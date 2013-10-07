@@ -1,10 +1,7 @@
 package {
-    import com.am_devcorp.algo.game.control.FocusKeeper;
-    import flash.display.Bitmap;
     import flash.display.Sprite;
     import flash.events.Event;
     import flash.events.MouseEvent;
-    import flash.geom.Rectangle;
     import gfx.*;
     
     /**
@@ -37,7 +34,7 @@ package {
             
             nHorz = Math.ceil(stage.stageWidth / picWidth) + 2
             nVert = Math.ceil(stage.stageHeight / picHeight) + 2
-            
+            trace(nHorz,nVert)
             vcaret = 0
             
             for (var i:int = 0; i < nVert; i++) {
@@ -46,7 +43,7 @@ package {
                 for (var j:int = 0; j < nHorz; j++) {
                     var np:LayeredTile
                     var selected:uint = Math.round(Math.random() * 3)
-                    np = new LayeredTile(selected,Resources.RAILTURN)
+                    np = new LayeredTile(selected, Resources.RAILSTRAIGHT)
                     np.x = hcaret
                     np.y = vcaret
                     hcaret += np.width
@@ -70,11 +67,11 @@ package {
             sensor.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown)
             sensor.addEventListener(MouseEvent.MOUSE_UP, onSensorMouseUp);
             sensor.addEventListener(MouseEvent.MOUSE_MOVE, onSensorMouseMove)
-            addEventListener(MouseEvent.RIGHT_CLICK,function (a):void {
-                removeEventListener(Event.ENTER_FRAME, onEnterFrame)
-            })
+            addEventListener(MouseEvent.RIGHT_CLICK, function(a:Event):void {
+                    removeEventListener(Event.ENTER_FRAME, onEnterFrame)
+                })
             addEventListener(Event.ENTER_FRAME, onEnterFrame)
-            pics[0][0] = new LayeredTile(Resources.SAND, Resources.RAILCROSS)
+            pics[0][0].change(Resources.SAND, Resources.RAILCROSS)
         }
         
         private function onEnterFrame(e:Event):void {
@@ -109,17 +106,18 @@ package {
         }
         
         private function onSensorMouseMove(e:MouseEvent):void {
-            if (rightExtra < picWidth / 2) {
+            while (rightExtra < picWidth / 2) {
+                trace(rightExtra)
                 //add to right end
-                var newx:int = pics[0][pics[0].length - 1].x + pics[0][pics[0].length - 1].width
+                var newx:int = pics[0][pics[0].length - 1].x + pics[0][pics[0].length - 1].width;
                 for (var i:int = 0; i < pics.length; i++) {
-                    var bm:LayeredTile = pics[i].shift()
-                    bm.x = newx
-                    pics[i].push(bm)
+                    pics[i][0].x = newx
+                    pics[i].push(pics[i].shift())
                     
                 }
                 
-            } else if (leftExtra < picWidth / 2) {
+            }
+            while (leftExtra < picWidth / 2) {
                 //add to left end
                 for (var i:int = 0; i < pics.length; i++) {
                     var bm:LayeredTile = pics[i].pop()
@@ -128,7 +126,7 @@ package {
                 }
             }
             
-            if (botExtra < picHeight / 2) {
+            while (botExtra < picHeight / 2) {
                 //add to bot end
                 var newy:int = pics[pics.length - 1][0].y + pics[pics.length - 1][0].height
                 for (var i:int = 0; i < pics[0].length; i++) {
@@ -136,9 +134,9 @@ package {
                 }
                 //var str:Vector.<Bitmap> = pics.shift()
                 pics.push(pics.shift())
-                trace_ys()
                 
-            } else if (topExtra < picHeight / 2) {
+            }
+            while (topExtra < picHeight / 2) {
                 //add to top end
                 var newy:int = pics[0][0].y - pics[pics.length - 1][0].height
                 pics.unshift(pics.pop())

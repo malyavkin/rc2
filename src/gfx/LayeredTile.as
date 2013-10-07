@@ -11,11 +11,19 @@ package gfx {
         
         public function LayeredTile(...layers) {
             super()
-            for each (var l in layers) {
+            for each (var l:uint in layers) {
+                this.addChild(new Bitmap(Resources.getTextureFor(l)))
+            }
+            
+        }
+        public function change(...layers):void {
+            while (this.numChildren) {
+                this.removeChildAt(0)
+            }
+            for each (var l:uint in layers) {
                 this.addChild(new Bitmap(Resources.getTextureFor(l)))
             }
         }
-        
     }
 
 }
