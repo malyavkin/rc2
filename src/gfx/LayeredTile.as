@@ -1,24 +1,21 @@
 package gfx {
+    import flash.display.Bitmap;
     import flash.display.BitmapData;
+    import flash.display.Sprite;
     import flash.geom.Point;
 	/**
      * ...
      * @author Malyavkin Alexey <a@malyavk.in>
      */
-    public class LayeredTile {
+    public class LayeredTile extends Sprite{
         
-        public function LayeredTile() {
-            
-        }
-        public static function texture(...layers):BitmapData {
-            var bd:BitmapData = new BitmapData(Resources.width, Resources.height)
-            for each (var i in layers) {
-                var src:BitmapData = Resources.getTextureFor(i)
-                bd.copyPixels(src, src.rect, new Point(),null,new Point(),true)
-                
+        public function LayeredTile(...layers) {
+            super()
+            for each (var l in layers) {
+                this.addChild(new Bitmap(Resources.getTextureFor(l)))
             }
-            return bd
         }
+        
     }
 
 }
