@@ -5,11 +5,11 @@ package model {
      */
     public class WorldTile {
         public var ground:uint;
-        public var mods:Vector.<uint>;
+        public var mods:Array
         
-        public function WorldTile(ground:uint,mods:Vector.<uint>=null) {
+        public function WorldTile(ground:uint,...mods) {
             this.ground = ground;
-            this.mods = mods;
+            this.mods = mods?mods:[];
             
         }
         
