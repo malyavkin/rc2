@@ -11,18 +11,24 @@ package gfx {
      */
     public class Field extends Sprite {
         
+        //drawable
         private var base:Sprite
         private var basemask:Sprite
         private var sensor:Sprite;
         
+        //size of a tile
         private var picWidth:uint;
         private var picHeight:uint;
         
+        
         private var pics:Vector.<Vector.<LayeredTile>>
+        //number of rendering tiles
         private var nHorz:uint;
         private var nVert:uint;
+        
         private var updateTimer:Timer;
         
+        //«pure» sizes, w/o invisible parts
         private var virtual_width:uint
         private var virtual_height:uint
         
@@ -39,7 +45,7 @@ package gfx {
             nHorz = Math.ceil(virtual_width  / picWidth ) + 2
             nVert = Math.ceil(virtual_height / picHeight) + 2
             trace(nHorz, nVert)
-            updateTimer = new Timer(50)
+            updateTimer = new Timer(20)
             updateTimer.addEventListener(TimerEvent.TIMER,update)
             //BASE
             base = new Sprite();
@@ -50,7 +56,7 @@ package gfx {
             sensor = new Sprite();
             sensor.graphics.beginFill(0, 0);
             sensor.graphics.drawRect(0, 0, width, height);
-            sensor.graphics.endFill();
+            sensor.graphics.endFill(); 
             //BASEMASK
             basemask = new Sprite();
             basemask.graphics.beginFill(0xffffff,0.5);
@@ -91,10 +97,10 @@ package gfx {
             
             sensor.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown)
             sensor.addEventListener(MouseEvent.MOUSE_UP, onSensorMouseUp);
-            addEventListener(MouseEvent.RIGHT_CLICK, function(a:Event):void {
-                    removeEventListener(Event.ENTER_FRAME, onEnterFrame)
-                })
-            addEventListener(Event.ENTER_FRAME, onEnterFrame)
+            //addEventListener(MouseEvent.RIGHT_CLICK, function(a:Event):void {
+            //        removeEventListener(Event.ENTER_FRAME, onEnterFrame)
+            //    })
+            //addEventListener(Event.ENTER_FRAME, onEnterFrame)
             pics[0][0].change(Resources.SAND, Resources.RAILCROSS)
             updateTimer.start()
         }
@@ -116,7 +122,7 @@ package gfx {
         }
         
         private function update(a:Event):void {
-            if (rightExtra < picWidth / 2) {
+            while (rightExtra < picWidth / 2) {
                 trace("→")
                 var newx:int = pics[0][pics[0].length - 1].x + pics[0][pics[0].length - 1].width;
                 for (var i:int = 0; i < pics.length; i++) {
@@ -126,7 +132,7 @@ package gfx {
                 }
                 
             }
-            if (leftExtra < picWidth / 2) {
+            while (leftExtra < picWidth / 2) {
                 trace("←")
                 //add to left end
                 for (var i:int = 0; i < pics.length; i++) {
@@ -136,7 +142,7 @@ package gfx {
                 }
             }
             
-            if (botExtra < picHeight / 2) {
+            while (botExtra < picHeight / 2) {
                 //add to bot end
                 trace("↓")
             
@@ -148,7 +154,7 @@ package gfx {
                 pics.push(pics.shift())
                 
             }
-            if (topExtra < picHeight / 2) {
+            while (topExtra < picHeight / 2) {
                 //add to top end
                 trace("↑")
                 var newy:int = pics[0][0].y - pics[pics.length - 1][0].height
@@ -181,7 +187,14 @@ package gfx {
         private function onSensorMouseUp(e:MouseEvent):void {
             base.stopDrag()
         }
-    
+        
+        override public function get width():Number {
+            return virtual_width
+        }
+        override public function get height():Number {
+            return virtual_height
+        }
+        
     }
 
 }

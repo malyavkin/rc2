@@ -14,12 +14,10 @@ package {
         
         public function Main():void {
             new Resources();
-            var f:Field = new Field(480, 320)
-            f.x = 80
-            f.y = 80
+            var f:Field = new Field(640, 480)
             addChild(f)
             f.init()
-            
+            trace(f.width)
             
             
         }
