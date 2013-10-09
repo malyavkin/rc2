@@ -14,9 +14,9 @@ package {
         
         public function Main():void {
             new Resources();
-            var f:Field = new Field(500, 200)
-            f.x = 150
-            f.y = 200
+            var f:Field = new Field(480, 320)
+            f.x = 80
+            f.y = 80
             addChild(f)
             f.init()
             
