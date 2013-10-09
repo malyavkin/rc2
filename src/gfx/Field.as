@@ -21,6 +21,7 @@ package gfx {
         private var pics:Vector.<Vector.<LayeredTile>>
         private var nHorz:uint;
         private var nVert:uint;
+        private var updateTimer:Timer;
         
         public function Field(width:uint, height:uint):void {
             super()
@@ -32,8 +33,8 @@ package gfx {
             nHorz = Math.ceil(width/ picWidth) + 2
             nVert = Math.ceil(height/ picHeight) + 2
             trace(nHorz, nVert)
-            var updateTimer:Timer = new Timer(50)
-            //updateTimer.addEventListener(TimerEvent.TIMER)
+            updateTimer = new Timer(50)
+            updateTimer.addEventListener(TimerEvent.TIMER,update)
 
             //BASE
             base = new Sprite();
@@ -85,13 +86,12 @@ package gfx {
             
             sensor.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown)
             sensor.addEventListener(MouseEvent.MOUSE_UP, onSensorMouseUp);
-            sensor.addEventListener(MouseEvent.MOUSE_MOVE, onSensorMouseMove)
             addEventListener(MouseEvent.RIGHT_CLICK, function(a:Event):void {
                     removeEventListener(Event.ENTER_FRAME, onEnterFrame)
                 })
             addEventListener(Event.ENTER_FRAME, onEnterFrame)
             pics[0][0].change(Resources.SAND, Resources.RAILCROSS)
-        
+            updateTimer.start()
         }
         
         private function get rightExtra():int {
@@ -110,7 +110,7 @@ package gfx {
             return -base.y - pics[0][0].y
         }
         
-        private function update():void {
+        private function update(a:Event):void {
             while (rightExtra < picWidth / 2) {
                 trace(rightExtra)
                 //add to right end
@@ -164,7 +164,6 @@ package gfx {
         private function onEnterFrame(e:Event):void {
             base.x++
             base.y++
-            onSensorMouseMove(null)
         }
         
         private function onMouseDown(e:MouseEvent):void {
@@ -173,10 +172,6 @@ package gfx {
         
         private function onSensorMouseUp(e:MouseEvent):void {
             base.stopDrag()
-        }
-        
-        private function onSensorMouseMove(e:MouseEvent):void {
-            update()
         }
     
     }
