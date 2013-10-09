@@ -1,8 +1,10 @@
-package gfx {
+package view {
     import flash.display.Bitmap;
     import flash.display.BitmapData;
     import flash.display.Sprite;
     import flash.geom.Point;
+    import raster.*;
+    
 	/**
      * ...
      * @author Malyavkin Alexey <a@malyavk.in>
@@ -14,6 +16,8 @@ package gfx {
             for each (var l:uint in layers) {
                 this.addChild(new Bitmap(Resources.getTextureFor(l)))
             }
+            
+            
             
         }
         public function change(...layers):void {

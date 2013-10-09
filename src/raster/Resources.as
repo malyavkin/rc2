@@ -1,4 +1,4 @@
-package gfx {
+package raster {
     import flash.display.BitmapData;
     /**
      * ...
@@ -6,20 +6,20 @@ package gfx {
      */
     public class Resources {
 
-        [Embed(source="../../raster/bg/sand.png")]
+        [Embed(source="textures/bg/sand.png")]
         private static const bgSand:Class
-        [Embed(source = "../../raster/bg/obsidian.png")]
+        [Embed(source ="textures/bg/obsidian.png")]
         private static const bgObsidian:Class
-        [Embed(source="../../raster/bg/netherrack.png")]
+        [Embed(source="textures/bg/netherrack.png")]
         private static const bgNetherrack:Class
-        [Embed(source="../../raster/bg/soul_sand.png")]
+        [Embed(source="textures/bg/soul_sand.png")]
         private static const bgSoulSand:Class
         
-        [Embed(source="../../raster/rail/0.png")]
+        [Embed(source="textures/rail/0.png")]
         private static const rail0:Class
-        [Embed(source="../../raster/rail/1.png")]
+        [Embed(source="textures/rail/1.png")]
         private static const rail1:Class
-        [Embed(source="../../raster/rail/3.png")]
+        [Embed(source="textures/rail/3.png")]
         private static const rail3:Class
 
         public static const SAND         :uint = 0
