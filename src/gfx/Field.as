@@ -23,19 +23,24 @@ package gfx {
         private var nVert:uint;
         private var updateTimer:Timer;
         
+        private var virtual_width:uint
+        private var virtual_height:uint
+        
         public function Field(width:uint, height:uint):void {
             super()
             new Resources();
+            
             //THINGS
+            virtual_width = width
+            virtual_height = height
             picWidth = Resources.width;
             picHeight = Resources.height;
             pics = new Vector.<Vector.<LayeredTile>>
-            nHorz = Math.ceil(width/ picWidth) + 2
-            nVert = Math.ceil(height/ picHeight) + 2
+            nHorz = Math.ceil(virtual_width  / picWidth ) + 2
+            nVert = Math.ceil(virtual_height / picHeight) + 2
             trace(nHorz, nVert)
             updateTimer = new Timer(50)
             updateTimer.addEventListener(TimerEvent.TIMER,update)
-
             //BASE
             base = new Sprite();
             base.x = -picWidth
@@ -48,14 +53,14 @@ package gfx {
             sensor.graphics.endFill();
             //BASEMASK
             basemask = new Sprite();
-            basemask.graphics.beginFill(0xffffff,1);
+            basemask.graphics.beginFill(0xffffff,0.5);
             basemask.graphics.drawRect(0, 0, width, height);
             basemask.graphics.endFill();
             
             //ADD THEM
             addChild(base)
-            addChild(sensor)
             addChild(basemask)
+            addChild(sensor)
             base.mask = basemask;
         }
         
@@ -95,15 +100,15 @@ package gfx {
         }
         
         private function get rightExtra():int {
-            return base.width - stage.stageWidth + base.x + pics[0][0].x
+            return base.width - virtual_width + base.x + pics[0][0].x
         }
         
         private function get leftExtra():int {
-            return -base.x - pics[0][0].x
+            return - base.x - pics[0][0].x
         }
         
         private function get botExtra():int {
-            return base.height - stage.stageHeight + base.y + pics[0][0].y
+            return base.height - virtual_height + base.y + pics[0][0].y
         }
         
         private function get topExtra():int {
@@ -111,9 +116,8 @@ package gfx {
         }
         
         private function update(a:Event):void {
-            while (rightExtra < picWidth / 2) {
-                trace(rightExtra)
-                //add to right end
+            if (rightExtra < picWidth / 2) {
+                trace("→")
                 var newx:int = pics[0][pics[0].length - 1].x + pics[0][pics[0].length - 1].width;
                 for (var i:int = 0; i < pics.length; i++) {
                     pics[i][0].x = newx
@@ -122,7 +126,8 @@ package gfx {
                 }
                 
             }
-            while (leftExtra < picWidth / 2) {
+            if (leftExtra < picWidth / 2) {
+                trace("←")
                 //add to left end
                 for (var i:int = 0; i < pics.length; i++) {
                     var bm:LayeredTile = pics[i].pop()
@@ -131,8 +136,10 @@ package gfx {
                 }
             }
             
-            while (botExtra < picHeight / 2) {
+            if (botExtra < picHeight / 2) {
                 //add to bot end
+                trace("↓")
+            
                 var newy:int = pics[pics.length - 1][0].y + pics[pics.length - 1][0].height
                 for (var i:int = 0; i < pics[0].length; i++) {
                     pics[0][i].y = newy
@@ -141,8 +148,9 @@ package gfx {
                 pics.push(pics.shift())
                 
             }
-            while (topExtra < picHeight / 2) {
+            if (topExtra < picHeight / 2) {
                 //add to top end
+                trace("↑")
                 var newy:int = pics[0][0].y - pics[pics.length - 1][0].height
                 pics.unshift(pics.pop())
                 for (var i:int = 0; i < pics[0].length; i++) {
@@ -157,7 +165,7 @@ package gfx {
                 for (var j:int = 0; j < pics.length; j++) {
                     s += pics[j][0].y + "  "
                 }
-                trace(newy, s)
+                //trace(newy, s)
             }
         }
         
