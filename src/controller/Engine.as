@@ -10,6 +10,8 @@ package controller {
     [Event(name="world", type="controller.WorldEvent")]
     public class Engine extends EventDispatcher{
         public var w:World
+        
+        
         public var t:Timer  = new Timer(50)
         public function Engine(w:World) {
             this.w = w
@@ -24,6 +26,17 @@ package controller {
         public function stop():void {
             
         }
+        
+        // INTERACTION WITH VIEWS
+        public function add():void {
+            
+        }
+        public function remove(i:uint,j:uint):void {
+            
+        }
+        
+        //INTERACTION WITH MODEL
+        
     }
 
 }

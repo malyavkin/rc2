@@ -2,7 +2,6 @@ package {
     
     import flash.display.Sprite;
     import flash.display.StageScaleMode;
-    import flash.events.Event;
     import flash.events.MouseEvent;
     import model.*;
     import view.*;
@@ -26,8 +25,13 @@ package {
             f.init(e);
             
             addChild(f);
+            f.addEventListener(MouseEvent.CLICK, onFClick)
             e.start();
             this.stage.scaleMode = StageScaleMode.NO_SCALE
+        }
+        
+        private function onFClick(e:MouseEvent):void {
+            trace(e.target.mouseX, e.target.mouseY)
         }
         
         
