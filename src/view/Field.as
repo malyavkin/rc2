@@ -8,12 +8,19 @@ package view {
     import flash.events.MouseEvent;
     import flash.events.TimerEvent;
     import flash.utils.Timer;
+    import flash.utils.getTimer
     
     /**
      * ...
      * @author Malyavkin Alexey <a@malyavk.in>
      */
     public class Field extends Sprite {
+        
+        //directions 
+        private const TOP:uint = 0
+        private const RIGHT:uint = 1
+        private const BOT:uint = 2
+        private const LEFT:uint = 3
         
         //drawable
         private var base:Sprite
@@ -29,21 +36,24 @@ package view {
         private var nHorz:uint;
         private var nVert:uint;
         
+        //camera
+        private var cam_x:int
+        private var cam_y:int
+        
+        //timers-related
         private var updateTimer:Timer;
+        private var last_mouseDownTime:uint
+        private var maxShortClickDuration:uint = 175 //empirically chosen value
+        
+        /// OVERRIDES
         
         //«pure» sizes, w/o invisible parts
         private var virtual_width:uint
         private var virtual_height:uint
         
-        //camera
-        private var cam_x:int
-        private var cam_y:int
-        
-        //directions 
-        private const TOP:uint = 0
-        private const RIGHT:uint = 1
-        private const BOT:uint = 2
-        private const LEFT:uint = 3
+        //mousex in tiles, not pixels
+        private var virtual_mousex:uint
+        private var virtual_mousey:uint
         
         private var engine:Engine
         
@@ -102,8 +112,7 @@ package view {
                 hcaret = 0
                 for (var j:int = 0; j < nHorz; j++) {
                     var np:LayeredTile
-                    var selected:uint = Math.round(Math.random() * 3)
-                    np = new LayeredTile(selected, Resources.RAILSTRAIGHT)
+                    np = new LayeredTile(Resources.SAND)
                     np.x = hcaret
                     np.y = vcaret
                     hcaret += np.width
@@ -118,9 +127,47 @@ package view {
             
             sensor.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown)
             sensor.addEventListener(MouseEvent.MOUSE_UP, onSensorMouseUp);
+            sensor.addEventListener(MouseEvent.MOUSE_MOVE, onSensorMouseMove);
             addEventListener(Event.ENTER_FRAME, onEnterFrame);
+            addEventListener(MouseEvent.CLICK, onClick);
+            
             pics[0][0].change(Resources.SAND, Resources.RAILCROSS)
             updateTimer.start()
+        }
+        
+        // need to stop Sprite native click events
+        private function onClick(e:MouseEvent):void {
+            e.stopImmediatePropagation()
+        }
+        
+        private function onMouseDown(e:MouseEvent):void {
+            base.startDrag()
+            last_mouseDownTime = getTimer()
+        }
+        
+        private function onSensorMouseUp(e:MouseEvent):void {
+            base.stopDrag()
+            if (last_mouseDownTime + maxShortClickDuration >= getTimer()) {
+                //is a shortclick  
+                trace(mouseX, mouseY)
+                dispatchEvent(new MouseEvent(MouseEvent.CLICK))
+            }
+        }
+        
+        // finding which tile touches the mouse
+        private function onSensorMouseMove(e:MouseEvent):void {
+            var virtual_mousex_copy:uint = virtual_mousex
+            var virtual_mousey_copy:uint = virtual_mousey
+            
+            virtual_mousex = uint((e.target.mouseX + leftExtra) / this.picWidth)
+            virtual_mousey = uint((e.target.mouseY + topExtra) / this.picHeight)
+            
+            if (virtual_mousex_copy != virtual_mousex || virtual_mousey_copy != virtual_mousey) {
+                // changed
+                pics[virtual_mousey_copy][virtual_mousex_copy].hover_effect = false
+                pics[virtual_mousey][virtual_mousex].hover_effect = true
+            }
+        
         }
         
         private function onEWorld(e:WorldEvent):void {
@@ -151,7 +198,6 @@ package view {
         
         private function draw(i:uint, j:uint, wt:WorldTile):void {
             if (wt.mods.length) {
-                
                 pics[i][j].change(wt.ground, wt.mods[0])
             } else {
                 
@@ -160,13 +206,13 @@ package view {
         }
         
         private function view_to_model_coords(viewX:int, viewY:int):UIntPoint {
-            var rx = (viewX + cam_x)
+            var rx:int = (viewX + cam_x)
             while (rx < 0) {
                 rx += engine.w.size.x
             }
             rx %= engine.w.size.x
             
-            var ry = (viewY + cam_y)
+            var ry:int = (viewY + cam_y)
             while (ry < 0) {
                 ry += engine.w.size.y
             }
@@ -176,24 +222,25 @@ package view {
         }
         
         private function infinite(a:Event):void {
+            var newx:int
+            var newy:int
             while (rightExtra < picWidth / 2) {
-                trace("→")
-                var newx:int = pics[0][pics[0].length - 1].x + pics[0][pics[0].length - 1].width;
+                //add to right end
+                newx = pics[0][pics[0].length - 1].x + pics[0][pics[0].length - 1].width;
                 for (var i:int = 0; i < pics.length; i++) {
                     pics[i][0].x = newx
                     pics[i].push(pics[i].shift())
-                    
                 }
                 cam_x++
                 redraw_partial(RIGHT)
                 
             }
             while (leftExtra < picWidth / 2) {
-                trace("←")
                 //add to left end
+                newx = pics[0][0].x - pics[0][pics[0].length-1].width
                 for (var i:int = 0; i < pics.length; i++) {
                     var bm:LayeredTile = pics[i].pop()
-                    bm.x = pics[i][0].x - bm.width
+                    bm.x = newx
                     pics[i].unshift(bm)
                 }
                 cam_x--
@@ -202,23 +249,17 @@ package view {
             
             while (botExtra < picHeight / 2) {
                 //add to bot end
-                trace("↓")
-                
-                var newy:int = pics[pics.length - 1][0].y + pics[pics.length - 1][0].height
+                newy = pics[pics.length - 1][0].y + pics[pics.length - 1][0].height
                 for (var i:int = 0; i < pics[0].length; i++) {
                     pics[0][i].y = newy
                 }
-                //var str:Vector.<Bitmap> = pics.shift()
                 pics.push(pics.shift())
-                
                 cam_y++
                 redraw_partial(BOT)
-                
             }
             while (topExtra < picHeight / 2) {
                 //add to top end
-                trace("↑")
-                var newy:int = pics[0][0].y - pics[pics.length - 1][0].height
+                newy = pics[0][0].y - pics[pics.length - 1][0].height
                 pics.unshift(pics.pop())
                 for (var i:int = 0; i < pics[0].length; i++) {
                     pics[0][i].y = newy
@@ -229,39 +270,49 @@ package view {
         }
         
         private function redraw_partial(dir:uint):void {
+            var i:uint
+            var j:uint
+            
             switch (dir) {
-                case TOP:
-                    var i:int = 0
-                    for (var j:int = 0; j < pics[0].length; j++) {
+                case TOP:  {
+                    i = 0
+                    for (j = 0; j < pics[0].length; j++) {
                         var coords:UIntPoint = view_to_model_coords(j, i);
                         draw(i, j, engine.w.data[coords.i][coords.j])
                     }
                     break;
-                case RIGHT:
-                    var j:int = pics[0].length - 1
-                    for (var i:int = 0; i < pics.length; i++) {
+                }
+                
+                case RIGHT:  {
+                    j = pics[0].length - 1
+                    for (i = 0; i < pics.length; i++) {
+                        var coords:UIntPoint = view_to_model_coords(j, i);
+                        draw(i, j, engine.w.data[coords.i][coords.j])
+                    }
+                    
+                    break;
+                }
+                case BOT:  {
+                    i = pics.length - 1
+                    for (j = 0; j < pics[0].length; j++) {
                         var coords:UIntPoint = view_to_model_coords(j, i);
                         draw(i, j, engine.w.data[coords.i][coords.j])
                     }
                     break;
-                case BOT:
-                    var i:int = pics.length - 1
-                    for (var j:int = 0; j < pics[0].length; j++) {
+                }
+                case LEFT:  {
+                    j = 0
+                    for (i = 0; i < pics.length; i++) {
                         var coords:UIntPoint = view_to_model_coords(j, i);
                         draw(i, j, engine.w.data[coords.i][coords.j])
                     }
                     break;
-                case LEFT:
-                    var j:int = 0
-                    for (var i:int = 0; i < pics.length; i++) {
-                        var coords:UIntPoint = view_to_model_coords(j, i);
-                        draw(i, j, engine.w.data[coords.i][coords.j])
-                    }
-                    break;
+                }
                 default:
             }
         }
         
+        /// PROPERTIES    
         private function get rightExtra():int {
             return base.width - virtual_width + base.x + pics[0][0].x
         }
@@ -279,24 +330,25 @@ package view {
         }
         
         private function onEnterFrame(e:Event):void {
-            base.x++
-            base.y++
+            //base.x++
+            //base.y++
         }
         
-        private function onMouseDown(e:MouseEvent):void {
-            base.startDrag()
-        }
-        
-        private function onSensorMouseUp(e:MouseEvent):void {
-            base.stopDrag()
-        }
-        
+        /// OVERRIDES
         override public function get width():Number {
             return virtual_width
         }
         
         override public function get height():Number {
             return virtual_height
+        }
+        
+        override public function get mouseX():Number {
+            return virtual_mousex
+        }
+        
+        override public function get mouseY():Number {
+            return virtual_mousey
         }
     
     }
