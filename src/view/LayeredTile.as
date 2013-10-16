@@ -5,27 +5,44 @@ package view {
     import flash.geom.Point;
     import raster.*;
     
-	/**
+    /**
      * ...
      * @author Malyavkin Alexey <a@malyavk.in>
      */
-    public class LayeredTile extends Sprite{
+    public class LayeredTile extends Sprite {
+        private var picLayers:Sprite
+        private var hover_frame:Sprite
         
-        public function LayeredTile(...layers) {
+        public function LayeredTile(... layers) {
             super()
+            picLayers = new Sprite()
+            hover_frame = new Sprite()
+            addChild(picLayers)
+            addChild(hover_frame)
+            
             for each (var l:uint in layers) {
-                this.addChild(new Bitmap(Resources.getTextureFor(l)))
+                picLayers.addChild(new Bitmap(Resources.getTextureFor(l)))
             }
-            
-            
-            
+        
         }
-        public function change(...layers):void {
-            while (this.numChildren) {
-                this.removeChildAt(0)
+        
+        public function set hover_effect(v:Boolean):void {
+            if (v) {
+                hover_frame.graphics.clear()
+                hover_frame.graphics.lineStyle(2, 0xFFFFFF)
+                hover_frame.graphics.beginFill(0, 0)
+                hover_frame.graphics.drawRect(0, 0, this.width-1, this.height-1)
+                hover_frame.graphics.endFill()
+            } else {
+                hover_frame.graphics.clear()
             }
+        
+        }
+        
+        public function change(... layers):void {
+            picLayers.removeChildren()
             for each (var l:uint in layers) {
-                this.addChild(new Bitmap(Resources.getTextureFor(l)))
+                picLayers.addChild(new Bitmap(Resources.getTextureFor(l)))
             }
         }
     }
